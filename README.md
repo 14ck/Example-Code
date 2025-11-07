@@ -24,7 +24,7 @@ Each project folder contains:
 
 ## 📂 Projects Included
 
-| Project | Description | Authot Info |
+| Project | Description | Author Info |
 |--------|-------------|--------------------------|
 | **Project 1 – _[Haivision Channel Preset Controller]_** | _Example: Interacting with a REST API to control Haivision media players. | primary author
 | **Project 2 – _[M3 Cisco Widget Buttons Plugin]_** | _Example: Plugin controlling Cisco Codec Widgets for custom control from a cisco panel. | primary author
