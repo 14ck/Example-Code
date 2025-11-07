@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_2"
+   viewBox="0 0 79784.715 9667.4066"
+   version="1.1"
+   width="79784.719"
+   height="9667.4062"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <style
+       id="style1">.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:3px;}</style>
+  </defs>
+  <g
+     id="Layer_1-2"
+     transform="translate(0,80.615789)">
+    <rect
+       class="cls-1"
+       x="1.5"
+       y="1.5"
+       width="64.989998"
+       height="44.049999"
+       rx="7.6300001"
+       ry="7.6300001"
+       id="rect1" />
+    <rect
+       class="cls-1"
+       x="1.5"
+       y="51.279999"
+       width="64.989998"
+       height="44.049999"
+       rx="7.6300001"
+       ry="7.6300001"
+       id="rect2" />
+    <rect
+       class="cls-1"
+       x="72.730003"
+       y="1.5"
+       width="64.989998"
+       height="44.049999"
+       rx="7.6300001"
+       ry="7.6300001"
+       id="rect3" />
+    <rect
+       class="cls-1"
+       x="72.730003"
+       y="51.279999"
+       width="64.989998"
+       height="44.049999"
+       rx="7.6300001"
+       ry="7.6300001"
+       id="rect4" />
+    <rect
+       class="cls-1"
+       x="143.88156"
+       y="2.3278642"
+       width="136.21776"
+       height="93.074036"
+       rx="15.992329"
+       ry="16.121567"
+       id="rect7" />
+  </g>
+</svg>

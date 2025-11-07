@@ -1,0 +1,38 @@
+{
+  "name": "b4-ll-eeoc-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --force",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "bs-build": "node node_modules/bs-build-tool/index.js"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tsconfig/svelte": "^5.0.4",
+    "svelte": "^5.28.1",
+    "svelte-check": "^4.1.6",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "@types/node": "^22.15.27",
+    "bs-build-tool": "^1.0.0",
+    "daisyui": "^5.0.43",
+    "fuzzysort": "^3.1.0",
+    "qrwc-svelte": "^1.0.2",
+    "svelte-dnd-action": "^0.9.61",
+    "tailwindcss": "^4.1.8",
+    "timezones-list": "^3.1.0",
+    "vite-plugin-singlefile": "^2.2.0"
+  },
+  "config": {
+    "filename": "index.html",
+    "newfile": "sha1-d06ccd060ac05d341fe493901dc49336352db26c",
+    "buildCommand": ""
+  }
+}

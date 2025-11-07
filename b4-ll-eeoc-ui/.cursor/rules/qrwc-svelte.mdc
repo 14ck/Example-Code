@@ -1,0 +1,463 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+I am interacting with a Q-SYS Core, which is a A/V control system, though the use of the "qrwc-svelte" library.
+Here is some information avout how to interact with a q-sys design running on a core.
+
+
+### Components and Controls
+
+In a Q-SYS Design Components contain a set of Controls. A Component can contain as few as one control or can contain many controls, there is no limit to the number of compoents in a single control.
+
+A control is always part of a component. Controls can be of different types:
+ - knobs (which can be an integer, float, time or any other type that would represent the `number` type in javascript)
+ - Buttons (which can be any control that can provide status or accept input as a `boolean` type)
+ - Trigger Buttons (which have no internal state and can only be triggered)
+ - Text (which can be text boxes, combo boxes or list boxes and are represented with the `string` type in javascript)
+
+
+### Working with Components
+
+With a connected and ready qrwc-svelte instance named `qrwcSvlete` a new componet instance is instanciated like so:
+
+```typescript
+const myComponent = qrwcSvelte.useComponent('my-component-name');
+```
+
+The component instance will also provide additional metadata that can be accessed such as:
+- Name - (User facing name. string read only)
+- ID - (Code Name of the component. string read only)
+- getControlList() - (Array of all controls contained in the component)
+
+# Button Examples
+
+## Setup
+
+All Examples assume a connected and ready QrwcSvelte instance provided globally.
+
+In these examples using vanilla Svelte, this is done by creating the following file in the `lib` directory:
+
+src/lib/qrwc-svelte.ts
+```typescript
+import { QrwcSvelte } from 'qrwc-svelte';
+
+export const qrwcSvelte = new QrwcSvelte("core-ip-or-hostname");
+```
+
+## Toggle Button
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const toggleButton = TestControlsComponent.useButton("toggleButton");
+</script>
+
+<button
+    style="background-color: {toggleButton.state ? 'green' : '#777'};"
+    onclick={() => toggleButton.toggle()}
+    >Toggle!
+</button>
+```
+
+This will toggle the button state between `true` and `false` when clicked. The button will change color based on the state, when set locally or on the Core.
+
+## Set Button State
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const toggleButton = TestControlsComponent.useButton("toggleButton");
+</script>
+
+<button
+    style="background-color: {toggleButton.state ? 'green' : '#777'};"
+    onclick={() => toggleButton.state = true}
+    >ON
+</button>
+
+<button
+    style="background-color: {toggleButton.state ? '#777' : 'red'};"
+    onclick={() => toggleButton.state = false}
+    >OFF
+</button>
+```
+
+Each button will set the state of the button to `true` or `false` respectively. The buttons will change color based on the state, when set locally or on the Core. Both buttons will react to the state of the control regardless of where it was set.
+
+## Momentary Button (Press and Release)
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const momentaryButton = TestControlsComponent.useButton("momentaryButton");
+</script>
+
+<button
+  style="background-color: {momentaryButton.state ? 'green' : '#777'};"
+  onpointerdown={() => momentaryButton.state = true}
+  onpointerup={() => momentaryButton.state = false}
+  onpointerout={() => momentaryButton.state = false}
+  oncontextmenu={(e) => e.preventDefault()}
+  >Press and Hold
+</button>
+```
+In addition to the `pointerdown` and `pointerup` events, the `pointerout` event is used to ensure the button state is set to `false` when the pointer leaves the button. The `contextmenu` event is used to prevent the context menu from appearing when the button is long pressed on touch based devices.
+
+## Trigger Button
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const triggerButton = TestControlsComponent.useTrigger("triggerButton");
+</script>
+
+<button onclick={() => triggerButton.trigger()}>Trigger!</button>
+```
+
+In this example, the useTrigger method is used to create the button. Since triggers are write only and don't have feedback, the triggerButton object only contains the generic metadata and a trigger method. When the button is clicked, the trigger method is called, sending the trigger command to the Core.
+
+# Knob and Fader Examples
+
+There is no HTML Input field for a knob, so these examples use a range input field. qrwc-svelte is not opinionated in regards to the UI, so you can use any UI element you like to represent the knob or fader. (There are some great UI libraries for Svelte out there already.)
+
+## Setup
+
+All Examples assume a connected and ready QrwcSvelte instance provided globally.
+
+In these examples using vanilla Svelte, this is done by creating the following file in the `lib` directory:
+
+src/lib/qrwc-svelte.ts
+```typescript
+import { QrwcSvelte } from 'qrwc-svelte';
+
+export const qrwcSvelte = new QrwcSvelte("core-ip-or-hostname");
+```
+
+## Fader
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const fader = TestControlsComponent.useKnob("fader");
+</script>
+
+<input type="range" bind:value={fader.position} min="0" max="1" step="0.01"/>
+
+<style>
+  input[type=range] {
+    writing-mode: vertical-lr;
+    direction: rtl;
+  }
+</style>
+```
+
+This will create a vertical fader that can be controlled by the user or by setting the `position` property. The fader will also respond to changes made locally or on the Core.
+
+The position is a value between 0 and 1, with 0 being the bottom and 1 being the top, setting the step property sets the resolution of the fader.
+
+The range slider by default only represents whole numbers, so the step property is set to 0.01 to allow for decimal values to be set and represented. Since the position property is always a floating point number between 0 and 1, changing the step value is necessary.
+
+The optional style block is used to make the fader vertical.
+
+## Fader with Label
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const fader = TestControlsComponent.useKnob("fader");
+</script>
+
+
+<input type="range" bind:value={fader.position} min="0" max="1" step="0.01"/>
+<p>{fader.string}</p>
+
+<style>
+  input[type=range] {
+    writing-mode: vertical-lr;
+    direction: rtl;
+  }
+</style>
+```
+
+The string property of the fader can be used to display the current value of the fader. This will update as the fader is moved or the position is set. The units of the fader are determined by the control on the Core, and are displayed in the string.
+
+## Fader using Value with Min/Max
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const fader = TestControlsComponent.useKnob("fader");
+</script>
+
+<input type="range" min={fader.valueMin} max={fader.valueMax} bind:value={fader.value} />
+
+<style>
+  input[type=range] {
+    writing-mode: vertical-lr;
+    direction: rtl;
+  }
+</style>
+```
+
+The @Q-SYS/qrwc library also provides control metadata that is also exposed by this library. For knob type controls, this includes the min and max values that can be used to set the range of the fader.
+
+
+## Numeric Entry
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const numericEntry = TestControlsComponent.useKnob("int");
+</script>
+
+<input 
+  type="number" 
+  bind:value={numericEntry.value} 
+  min={numericEntry.valueMin} 
+  max={numericEntry.valueMax}
+  />
+```
+
+This will create a numeric entry field that can be controlled by the user or by setting the `value` property. The field will also respond to changes made locally or on the Core. The `valueMin` and `valueMax` properties are provided by the control on the core and can be used to set the range of the field.
+
+## Pan with Center Button
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const TestControlsComponent = qrwcSvelte.useComponent("TestControls");
+
+  const panKnob = TestControlsComponent.useKnob("panKnob");
+</script>
+
+<input 
+  type="range" 
+  bind:value={panKnob.value} 
+  min={panKnob.valueMin} 
+  max={panKnob.valueMax}
+  step="0.01"
+  />
+
+<button
+  style="background-color: {panKnob.value === 0 ? 'green' : ''};"
+  onclick={() => panKnob.value = 0}
+  >Center
+</button>
+```
+
+Pan controls are centered when the value is 0. Through the magic of runes, the button logic is independent of the slider, yet both will respond to changes made by each other and any changes made elsewhere (or by other UIs) on the Core.
+
+## Fader with Increment and Decrement buttons
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const gainComponent = qrwcSvelte.useComponent("GainWithRamp");
+
+  const fader = gainComponent.useKnob("gain");
+  const increment = gainComponent.useButton("stepper.increase");
+  const decrement = gainComponent.useButton("stepper.decrease");
+</script>
+
+<!-- Decrement button -->
+<button
+  onpointerdown={() => (decrement.state = true)}
+  onpointerup={() => (decrement.state = false)}
+  onpointerleave={() => (decrement.state = false)}
+  oncontextmenu={(e) => e.preventDefault()}
+>Ramp Down</button>
+
+<!-- Actual fader -->
+<input type="range" bind:value={fader.position} min="0" max="1" step="0.01"/>
+
+<!-- Increment button -->
+<button
+  onpointerdown={() => (increment.state = true)}
+  onpointerup={() => (increment.state = false)}
+  onpointerleave={() => (increment.state = false)}
+  oncontextmenu={(e) => e.preventDefault()}
+>Ramp Up</button>
+```
+
+# Text Examples
+
+## Setup
+
+All Examples assume a connected and ready QrwcSvelte instance provided globally.
+
+In these examples using vanilla Svelte, this is done by creating the following file in the `lib` directory:
+
+src/lib/qrwc-svelte.ts
+```typescript
+import { QrwcSvelte } from 'qrwc-svelte';
+
+export const qrwcSvelte = new QrwcSvelte("core-ip-or-hostname");
+```
+
+## Display Text
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const textBox = qrwcSvelte.useText("testControls", "textBox");
+</script>
+
+<p>{textBox.string}</p>
+```
+
+This will display the text value of the `textBox` control. The text will update when changed on the core. The P tag is optional and any element can be used to display the text.
+
+## Set Text
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const textBox = qrwcSvelte.useText("testControls", "textBox");
+</script>
+
+<input type="text" bind:value={textBox.string}/>
+```
+
+This will create an input field that can be used to set the text value of the `textBox` control. The text will update when changed locally or on the core. Updated values will be sent to the core continuously while the input field is being edited.
+
+
+## Set Text With Submit and Cancel Buttons
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const textBox = qrwcSvelte.useText("testControls", "textBox");
+
+  let textBoxText = $state(textBox.string);
+
+  $effect(() => {
+    textBoxText = textBox.string;
+  });
+
+</script>
+
+<input type="text" bind:value={textBoxText}/>
+
+<!--The Submit button takes what the user entered and sends it to the Core-->
+<button 
+    disabled={textBoxText === textBox.string} 
+    onclick={() => textBox.string = textBoxText}
+    >Submit
+</button>
+
+<!--The Cancel Button takes the last state from the core and overwrites any user changes-->
+<button
+    disabled={textBoxText === textBox.string} 
+    onclick={() => textBoxText = textBox.string}
+    >Cancel
+</button>
+```
+
+If you simply bind the sting rune provided by the control to an input field, the value will be sent to the core continuously while the input field is being edited. This example shows how to create a submit and cancel button to control when the value is sent to the core. The cancel button will revert the input field to the last value sent by the core. The submit button will send the value to the core. The buttons are disabled when the input field matches the value on the core. The Effect function is used to allow one-way updates from the core to update the input field.
+
+For more information on the Effect function, see the [Svelte documentation](mdc:https:/svelte.dev/docs/svelte/$effect).
+
+
+## ComboBox
+
+```svelte
+<script lang="ts">
+  import { qrwcSvelte } from "./lib/qrwc-svelte";
+
+  const comboBox = qrwcSvelte.useComboBox("testControls", "textComboBox");
+
+</script>
+
+<select bind:value={comboBox.string}>
+  {#each comboBox.choices as choice}
+    <option value={choice}>{choice}</option>
+  {/each}
+</select>
+```
+
+A Separate dedicated use method is provided specifically for combo boxes that will read the available choices and provide them as an array. The value of the combo box is bound to the string value of the control. The choices are displayed as options in a select element. The value of the control will update when the user selects a new option. The control will update when the value is changed on the core. The combo box selection can also be made by 0 based index by binding to the `comboBox.option` property.
+
+In this example, we are using multiple controls within the same component, the fader is the same as the example above.
+However, the increment and decrement buttons require a little extra attention as they need to transmit both press and release (momentary buttons).
+Both `pointerdown` and `pointerup` up events are necessary to capture both the press and release, but the `pointerleave` event is also necessary as if a user's mouse or finger leaves the button prior to releasing the button the button would remain latched as pressed. By setting the button's state to false on `pointerleave` we cancel the ramp if the user cursor or finger leaves the bounds of the button. Finally, we need to cancel the right-click context menu on touch devices as we don't want it showing when long pressing on this button.
+
+
+
+### Connection and setup
+
+To connect to a Q-SYS core instantiate a new instance of the qrwc-svelte library.
+
+```typescript
+import { QrwcSvelte } from 'qrwc-svelte';
+
+// Create a new instance of QrwcSvelte and connect to a core at 192.168.1.100
+export const qrwcSvelte = new QrwcSvelte("192.168.1.100");
+```
+
+Passing in the IP Address of the Core into the QrwcSvelte constructor will conenct to that core with default settings. Additional connection options, including redundant core support is available by passing in a `ConnectionOptions` object instead of a string.
+
+```typescript
+import {QrwcSvelte, type ConnectionOptions} from 'qrwc-svelte'
+
+const opts: ConnectionOptions = {
+  coreIp: "192.168.1.100",    // IP/hostname of the core
+  redundantCoreIp: undefined, // IP/hostname of the redundant core if present
+  secure: false,              // true for https/wss, false for http/ws (default)
+  poleInterval: 35,           // Polling interval in milliseconds (default 35)
+  controlFilter: undefined,   // Filter for control events (default undefined)
+
+  export const qrwcSvelte = new QrwcSvelte(opts);
+};
+```
+
+### Control Filter
+The `controlFilter` option allows you to filter the controls that are subscribed to by the library. The control filter is an array of strings that represent the control names that the library **will** subscribe to. If the control filter is not provided, the library will subscribe to all controls with external script access in the Q-SYS design.
+
+```typescript
+const opts: ConnectionOptions = {
+		...
+	  controlFilter: ["testControls","myOtherControl"],
+};
+```
+Only the components with the code names `testControls` and `myOtherControl` will be subscribed to by the library. All other controls will be ignored.
+
+> **WARNING**: 
+> If none of controls in the design match the control filter, the library will fail to connect to the core. Make sure that the control filter matches at least one control in the design. As long at least one control is matched, the library will connect and ignore any controls that do not match the filter.
+
+Optionally a filter function can be provided to the control filter. The filter function should return a boolean value based on the control. If the function returns `true`, the control will be subscribed to. If the function returns `false`, the control will be ignored.
+
+```typescript
+const opts: ConnectionOptions = {
+		...
+		controlFilter: (ctl) => ctl.Name.match(/^testControl[0-9A-Fa-f]{2}/gm) !== null,
+};
+```
